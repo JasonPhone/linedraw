@@ -1,18 +1,20 @@
-from random import *
-import math
+# from random import *
+# import math
 import argparse
-
 from PIL import Image, ImageDraw, ImageOps
-
-from filters import *
-from strokesort import *
+# from filters import *
+import filters
+# from strokesort import *
+import strokesort
 import perlin
-from util import *
+# from util import *
+import util
 
-no_cv = False
-export_path = "output/out.svg"
-draw_contours = True
-draw_hatch = True
+
+no_cv = False  # whether to switch to no_cv mode
+export_path = "output/out.svg"  # default output path
+draw_contours = True  # whether to draw boundaries
+draw_hatch = True  # wheher to draw inside
 show_bitmap = False
 resolution = 1024
 hatch_size = 16
@@ -21,7 +23,7 @@ contour_simplify = 2
 try:
     import numpy as np
     import cv2
-except:
+except Exception:  # need detailed exceptions
     print("Cannot import numpy/openCV. Switching to NO_CV mode.")
     no_cv = True
 
@@ -30,7 +32,7 @@ def find_edges(IM):
     print("finding edges...")
     if no_cv:
         # appmask(IM,[F_Blur])
-        appmask(IM, [F_SobelX, F_SobelY])
+        filters.appmask(IM, [filters.F_SobelX, filters.F_SobelY])
     else:
         im = np.array(IM)
         im = cv2.GaussianBlur(im, (3, 3), 0)
@@ -112,7 +114,7 @@ def getcontours(IM, sc=2):
     for i in range(len(contours)):
         for j in range(len(contours)):
             if len(contours[i]) > 0 and len(contours[j]) > 0:
-                if distsum(contours[j][0], contours[i][-1]) < 8:
+                if util.distsum(contours[j][0], contours[i][-1]) < 8:
                     contours[i] = contours[i] + contours[j]
                     contours[j] = []
 
@@ -180,37 +182,46 @@ def hatch(IM, sc=16):
 
 def sketch(path):
     IM = None
-    possible = [
+    imgAvailable = False
+    # print("Received path " + path)
+    possible = [  # for input tolerance
         path, "images/" + path, "images/" + path + ".jpg",
         "images/" + path + ".png", "images/" + path + ".tif"
     ]
     for p in possible:
         try:
             IM = Image.open(p)
-            break
+            # break
         except FileNotFoundError:
-            print("The Input File wasn't found. Check Path")
-            exit(0)
-            pass
+            # print("The Input File wasn't found. Check Path")
+            # exit(0)
+            continue
+        imgAvailable = True
+    if not imgAvailable:
+        print("The Input File wasn't found. Check Path")
+        exit(0)
     w, h = IM.size
 
-    IM = IM.convert("L")
+    IM = IM.convert("L")  # greyscale
     IM = ImageOps.autocontrast(IM, 10)
 
     lines = []
+    # get lines
     if draw_contours:
         lines += getcontours(
-            IM.resize((resolution // contour_simplify,
-                       resolution // contour_simplify * h // w)),
+            IM.resize((
+                resolution // contour_simplify,  # width 512
+                resolution // contour_simplify * h //
+                w)),  # height 512 * h // w
             contour_simplify)
     if draw_hatch:
         lines += hatch(
             IM.resize(
                 (resolution // hatch_size, resolution // hatch_size * h // w)),
             hatch_size)
-
-    lines = sortlines(lines)
-    if show_bitmap:
+    # sort lines for quicker drawing
+    lines = strokesort.sortlines(lines)
+    if show_bitmap:  # show png preview
         disp = Image.new("RGB", (resolution, resolution * h // w),
                          (255, 255, 255))
         draw = ImageDraw.Draw(disp)
@@ -226,12 +237,13 @@ def sketch(path):
     return lines
 
 
-def makesvg(lines):
+def makesvg(lines):  # svg format?
     print("generating svg file...")
     out = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1">'
-    for l in lines:
-        l = ",".join([str(p[0] * 0.5) + "," + str(p[1] * 0.5) for p in l])
-        out += '<polyline points="' + l + '" stroke="black" stroke-width="2" fill="none" />\n'
+    for line in lines:
+        line = ",".join(
+            [str(p[0] * 0.5) + "," + str(p[1] * 0.5) for p in line])
+        out += '<polyline points="' + line + '" stroke="black" stroke-width="2" fill="none" />\n'
     out += '</svg>'
     return out
 
@@ -304,7 +316,7 @@ if __name__ == "__main__":
                         help='Level of contour simplification. eg. 1, 2, 3')
 
     args = parser.parse_args()
-
+    # get args
     export_path = args.output_path
     draw_hatch = not args.no_hatch
     draw_contours = not args.no_contour

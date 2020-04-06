@@ -1,6 +1,7 @@
-from random import *
-from PIL import Image, ImageDraw, ImageOps
-from util import *
+# from random import *
+# from PIL import Image, ImageDraw, ImageOps
+# from util import *
+import util
 
 
 def sortlines(lines):
@@ -10,8 +11,8 @@ def sortlines(lines):
     while clines != []:
         x, s, r = None, 1000000, False
         for l in clines:
-            d = distsum(l[0], slines[-1][-1])
-            dr = distsum(l[-1], slines[-1][-1])
+            d = util.distsum(l[0], slines[-1][-1])
+            dr = util.distsum(l[-1], slines[-1][-1])
             if d < s:
                 x, s, r = l[:], d, False
             if dr < s:
@@ -26,7 +27,7 @@ def sortlines(lines):
 
 def visualize(lines):
     import turtle
-    wn = turtle.Screen()
+    # wn = turtle.Screen()
     t = turtle.Turtle()
     t.speed(0)
     t.pencolor('red')
@@ -39,9 +40,10 @@ def visualize(lines):
     turtle.mainloop()
 
 
+# for module test
 if __name__ == "__main__":
     import linedraw
     # linedraw.draw_hatch = False
-    lines = linedraw.sketch("Lenna")
+    lines = linedraw.sketch("cameraman")
     # lines = sortlines(lines)
     visualize(lines)

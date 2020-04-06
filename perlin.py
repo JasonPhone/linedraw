@@ -85,12 +85,12 @@ def noise(x, y=0, z=0):
             zf -= 1
     return r
 
-
-def noiseDetail(lod, falloff):
-    if lod > 0:
-        perlin_octaves = lod
-    if falloff > 0:
-        perlin_amp_falloff = falloff
+# maybe useless
+# def noiseDetail(lod, falloff):
+#     if lod > 0:
+#         perlin_octaves = lod
+#     if falloff > 0:
+#         perlin_amp_falloff = falloff
 
 
 class LCG():
@@ -101,8 +101,8 @@ class LCG():
         self.seed = self.z = None
 
     def setSeed(self, val=None):
-        self.z = self.seed = (math.random() *
-                              self.m if val == None else val) >> 0
+        self.z = self.seed = (random.random() *
+                              self.m if val is None else val) >> 0
 
     def getSeed(self):
         return self.seed

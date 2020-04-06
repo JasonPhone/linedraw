@@ -1,7 +1,25 @@
-from PIL import Image, ImageDraw, ImageOps, ImageFilter
-from random import *
-import math
+# from PIL import Image, ImageDraw, ImageOps, ImageFilter
+# from random import *
+# import math
+'''
+    5 * 5 blur filter core:
+    2   4   5   4   2
+    4   9   12  9   4
+    5   12  15  12  5
+    4   9   12  9   4
+    2   4   5   4   2
+    3 * 3 Sobel filter core X:
+    1   0   -1
+    2   0   -2
+    1   0   -1
+    extract the edges
+    3 * 3 Sobel filter core X:
+    1   2   1
+    0   0   0
+    -1  -2  -1
+    extract the edges
 
+    '''
 F_Blur = {
     (-2, -2): 2,
     (-1, -2): 4,
